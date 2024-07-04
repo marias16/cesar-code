@@ -3,16 +3,16 @@
 
     </head>
     <body>
+        <h1>Codificador código César</h1>
+        <h2>Tu texto</h2>
         <input type="text" placeholder="hello" id="inputID">
-        </input>
+        <h2>Cuánto quieres sumar</h2>
+        <input type="number" placeholder="del 1 al 27" id="sumID" min="0" max="27">
+        <h2>Tu resultado</h2>
         <p id="outputID"></p>
     </body>
     <script>
-
-        document.addEventListener("DOMContentLoaded", () => {
-            //caracteres 
-
-            const caracteres = [
+        const caracteres = [
             'a', 'á', 'b', 'c', 'd', 'e', 'é', 'f', 'g', 'h', 'i', 'í', 'j',
             'k', 'l', 'm', 'n', 'ñ', 'o', 'ó', 'p', 'q', 'r', 's', 't', 'u',
             'ú', 'ü', 'v', 'w', 'x', 'y', 'z', 'A', 'Á', 'B', 'C', 'D', 'E',
@@ -20,22 +20,87 @@
             'Ó', 'P', 'Q', 'R', 'S', 'T', 'U', 'Ú', 'Ü', 'V', 'W', 'X', 'Y', 'Z'
             ]
 
+            const caracteresEspanol = [
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 
+            'n', 'ñ', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+            ];
+
+            const caracEsMayus = [
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 
+            'N', 'Ñ', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+            ];
+
+
+        document.addEventListener("DOMContentLoaded", () => {
+
             //seleccionar output e input element y crear una variable para el valor q va a ir ahi
         
-            
+
+            const sum = document.querySelector("#sumID")
             const outputValue = document.querySelector("#outputID");
             const inputElement = document.querySelector("#inputID")
-            //event listener que salta cuando se introduce texto
-            inputElement.addEventListener("input", () => {
+
+            //funcion que te quita acentos
+            const quitarAcento = (carac) => {
+                    const caracterNormalizado = carac.normalize('NFD');
+                    const caracterSinAcento = caracterNormalizado.replace(/[\u0300-\u036f]/g, '');
+                    return caracterSinAcento;
+            }
+
+            //funcion que te devuelve el carac con el sumValue
+
+            const caracOutput = (arr,carac,sumValue) => {
+                const indexCarac = arr.indexOf(carac) + sumValue
+                return arr[indexCarac];
+            }
+
+            //funcion que te devuelve el caracter si la anterior es indefinida
+
+            const ifCaracIsUnd = (arr, sumValue, firstIndex) => {
+                const newIndex = sumValue + firstIndex - 27 ;
+                return arr[newIndex];
+            }
+
+            // funcion que te updatea el output 
+            const updateOutput = () => {
+                
                 let strOutput = "";
                 const inputValue = inputElement.value;
+                const sumValue = Number(sum.value);
+                let arrCaracs = []
 
-                for (let i = inputValue.length - 1; i >= 0; i--) {
-                    strOutput += inputValue[i]
+                for (let i = 0; i < inputValue.length; i++) {
+                    const dirtyCarac = inputValue[i]
+
+                    // obtenemos el array al que pertenece el carac y descartamos numeros etc
+                    if(/^[a-záéíóúñü]$/.test(dirtyCarac)) {
+                        arrCaracs = caracteresEspanol;
+                    } else if (/^[A-ZÁÉÍÓÚÑÜ]$/.test(dirtyCarac)){
+                        arrCaracs = caracEsMayus;
+                    } else {
+                        strOutput += dirtyCarac
+                        continue;
+                    }
+
+                    //quitamos acentos
+                    const carac = quitarAcento(dirtyCarac)
+
+                    //checamos si es undefined
+                    if (caracOutput(arrCaracs, carac, sumValue) === undefined) {
+                        strOutput += ifCaracIsUnd(arrCaracs, sumValue, arrCaracs.indexOf(carac))
+                    } else {
+                        strOutput += caracOutput(arrCaracs, carac, sumValue)
+                    }
+
                 }
 
                 outputValue.innerText = strOutput;
-            });
+            }
+        
+
+            //event listener que salta cuando se introduce texto
+            inputElement.addEventListener("input", updateOutput);
+            sum.addEventListener("input", updateOutput)
         })
         
         
